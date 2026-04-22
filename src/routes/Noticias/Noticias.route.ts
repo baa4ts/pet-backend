@@ -4,14 +4,70 @@ import { CrearNoticiaSchema } from "./Noticias.scheme"
 import { prisma } from "@/configuracion/Prisma"
 import { Archivos } from "@/middleware/Archivos"
 import { requiereAuth } from "@/middleware/Session"
+import { secureQuery } from "@/helpers/secureQuery"
 
 const api: Router = Router()
 
-api.post("/",
+// =====================
+// GET NOTICIAS
+// =====================
+api.get("/", async (req: Request, res: Response) => {
+    const { limit, offset, order, full } = secureQuery(req)
 
-    /**
-     * Chain of Responsibility
-     */
+    const AHORA = new Date()
+    const H24 = new Date(AHORA.getTime() - 24 * 60 * 60 * 1000)
+
+    try {
+        const [noticias, count] = await prisma.$transaction([
+
+            /**
+             * Consulta para obtener las noticias
+             */
+            prisma.noticia.findMany({
+                // El filtro se aplica si no viene full=true
+                where: full ? {} : { createdAt: { gte: H24, lte: AHORA } },
+
+                // La paginacion se aplica solo si viene
+                ...(limit !== undefined && { take: limit }),
+                ...(offset !== undefined && { skip: offset }),
+
+                orderBy: {
+                    createdAt: order ?? "desc",
+                },
+            }),
+
+            /**
+             * Consulta para contar las noticias
+             */
+            prisma.noticia.count({
+                where: full ? {} : { createdAt: { gte: H24, lte: AHORA } },
+            }),
+        ])
+
+        return res.json({
+            message: "ok",
+            data: noticias,
+            meta: {
+                total: count,
+                limit: limit ?? null,
+                offset: offset ?? null,
+            },
+        })
+    } catch (err) {
+        console.error("Error al obtener noticias:", err)
+        return res.status(500).json({
+            message: "ErrorServidor",
+            data: null,
+            meta: {},
+        })
+    }
+})
+
+// =====================
+// POST NOTICIA
+// =====================
+api.post(
+    "/",
     requiereAuth,
     Archivos({
         formatos: [".jpg", ".jpeg", ".png", ".webp", ".pdf"],
@@ -20,14 +76,17 @@ api.post("/",
     }).array("recursos", 5),
 
     /**
-     * Handler
+     * Controlador para crear noticia
      */
     async (req: Request, res: Response) => {
         const result = CrearNoticiaSchema.safeParse(req.body)
 
         if (!result.success) {
-            res.status(400).json({ mensaje: "DatosInvalidos", noticias: null })
-            return
+            return res.status(400).json({
+                message: "DatosInvalidos",
+                data: null,
+                meta: {},
+            })
         }
 
         const archivos = (req.files as Express.Multer.File[]) ?? []
@@ -43,17 +102,27 @@ api.post("/",
                             data: archivos.map(f => ({
                                 url: f.filename,
                                 userId: req.user!.id,
-                            }))
-                        }
-                    }
+                            })),
+                        },
+                    },
                 },
-                include: { recursos: true }
+                include: { recursos: true },
             })
 
-            res.status(201).json({ mensaje: "ok", noticias: [noticia] })
-        } catch {
-            res.status(500).json({ mensaje: "ErrorServidor", noticias: null })
+            return res.status(201).json({
+                message: "ok",
+                data: noticia,
+                meta: {},
+            })
+        } catch (err) {
+            console.error("Error al crear noticia:", err)
+            return res.status(500).json({
+                message: "ErrorServidor",
+                data: null,
+                meta: {},
+            })
         }
-    })
+    }
+)
 
 export { api as NoticiasRoute }
