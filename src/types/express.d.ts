@@ -1,4 +1,4 @@
-import { auth } from "@/configuracion/BetterAuth"
+import { auth } from "@/configuracion/Auth"
 
 declare global {
     namespace Express {
