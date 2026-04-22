@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          String?
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  permisos      String?   @default("")
+  sessions      Session[]
+  accounts      Account[]
+
+  // =========== Relaciones =========== //
+  noticias Noticia[]
+  recursos Recurso[]
+  eventos  Evento[]
+
+  ausenciasDocente    Ausencia[] @relation("AusenciaDocente")
+  ausenciasPublicadas Ausencia[] @relation("AusenciaPublicador")
+  // =========== ---------- =========== //
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ========= Seccion fuera de better auth
+model Recurso {
+  id        Int      @id @default(autoincrement())
+  url       String
+  tipo      String?
+  createdAt DateTime @default(now())
+  noticiaId Int?
+  noticia   Noticia? @relation(fields: [noticiaId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([noticiaId])
+  @@map("recurso")
+}
+
+model Noticia {
+  id          Int       @id @default(autoincrement())
+  titulo      String
+  descripcion String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  recursos    Recurso[]
+
+  @@index([userId])
+  @@map("noticia")
+}
+
+model Ausencia {
+  id        Int      @id @default(autoincrement())
+  materia   String
+  createdAt DateTime @default(now())
+
+  docenteId String
+  docente   User   @relation("AusenciaDocente", fields: [docenteId], references: [id])
+
+  publicadorId String
+  publicador   User   @relation("AusenciaPublicador", fields: [publicadorId], references: [id])
+
+  @@index([docenteId])
+  @@index([publicadorId])
+  @@map("ausencia")
+}
+
+model Evento {
+  id          Int       @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  fechaInicio DateTime
+  fechaFin    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("evento")
+}

@@ -1,0 +1,21 @@
+# Dependencias
+node_modules
+
+# Build
+dist
+
+# Variables de entorno
+.env
+
+# Base de datos
+*.db
+*.db-journal
+
+# Prisma
+/src/generated/prisma
+
+# Editor
+.vscode
+
+# pnpm
+pnpm-workspace.yaml
