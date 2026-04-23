@@ -3,7 +3,7 @@ import type { Request, Response } from "express"
 import { CrearNoticiaSchema } from "./Noticias.scheme"
 import { prisma } from "@/configuracion/Prisma"
 import { Archivos } from "@/middleware/Archivos"
-import { requiereAuth } from "@/middleware/Session"
+import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import { secureQuery } from "@/helpers/secureQuery"
 import fs from 'fs/promises'
 import { Home } from "@/helpers/Home"
@@ -125,13 +125,25 @@ api.get("/:id", async (req: Request, res: Response) => {
 // POST - Crear una noticia
 // =====================
 api.post("/",
+
+    /**
+     * Chain of Responsibility
+     */
+
+    // Session y permiso
     requiereAuth,
+    requierePermiso(["noticias"]),
+
+    // Archivos
     Archivos({
-        formatos: [".jpg", ".jpeg", ".png", ".webp", ".pdf"],
+        formatos: [".jpg", ".jpeg", ".png", ".webp"],
         maxFiles: 5,
         maxSizeFile: 10 * 1024 * 1024,
     }).array("recursos", 5),
 
+    /**
+     * Handle
+     */
     async (req: Request, res: Response) => {
         const result = CrearNoticiaSchema.safeParse(req.body)
 
@@ -188,69 +200,82 @@ api.post("/",
 // =====================
 // DELETE - Eliminar una noticia
 // =====================
-api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
-    const idNoticia = Number(req.params.id)
+api.delete("/:id",
 
-    if (isNaN(idNoticia)) {
-        res.status(400).json({
-            message: "DatosInvalidos",
-            data: [],
-            meta: {},
-        })
-        return;
-    }
+    /**
+     * Chain of Responsibility
+     */
 
-    try {
-        /**
-         * Consulta para buscar una unica noticia
-         */
-        const noticia = await prisma.noticia.findUnique({
-            where: { id: idNoticia }
-        })
+    // Session y permiso
+    requiereAuth,
+    requierePermiso(["noticias"]),
 
-        if (!noticia) {
-            res.status(404).json({
-                message: "NoEncontrado",
+    /**
+     * Handle
+     */
+    async (req: Request, res: Response) => {
+        const idNoticia = Number(req.params.id)
+
+        if (isNaN(idNoticia)) {
+            res.status(400).json({
+                message: "DatosInvalidos",
                 data: [],
                 meta: {},
             })
             return;
         }
 
-        /**
-         * Consulta para borrar una noticia
-         */
-        const [recursos] = await prisma.$transaction([
-            prisma.recurso.findMany({ where: { noticiaId: idNoticia } }),
-            prisma.recurso.deleteMany({ where: { noticiaId: idNoticia } }),
-            prisma.noticia.delete({ where: { id: idNoticia } }),
-        ])
+        try {
+            /**
+             * Consulta para buscar una unica noticia
+             */
+            const noticia = await prisma.noticia.findUnique({
+                where: { id: idNoticia }
+            })
+
+            if (!noticia) {
+                res.status(404).json({
+                    message: "NoEncontrado",
+                    data: [],
+                    meta: {},
+                })
+                return;
+            }
+
+            /**
+             * Consulta para borrar una noticia
+             */
+            const [recursos] = await prisma.$transaction([
+                prisma.recurso.findMany({ where: { noticiaId: idNoticia } }),
+                prisma.recurso.deleteMany({ where: { noticiaId: idNoticia } }),
+                prisma.noticia.delete({ where: { id: idNoticia } }),
+            ])
 
 
-        // Borrar archivos
-        if (recursos.length > 0) {
-            await Promise.all(
-                recursos.map(r =>
-                    fs.unlink(Home(env.STATIC, false) + r.url).catch(() => { })
+            // Borrar archivos
+            if (recursos.length > 0) {
+                await Promise.all(
+                    recursos.map(r =>
+                        fs.unlink(Home(env.STATIC, false) + r.url).catch(() => { })
+                    )
                 )
-            )
-        }
+            }
 
-        res.json({
-            message: "ok",
-            data: [],
-            meta: {},
-        })
-        return;
-    } catch (err) {
-        console.error("Error al eliminar noticia:", err)
-        res.status(500).json({
-            message: "ErrorServidor",
-            data: [],
-            meta: {},
-        })
-        return;
-    }
-})
+            res.json({
+                message: "ok",
+                data: [],
+                meta: {},
+            })
+            return;
+        } catch (err) {
+            console.error("Error al eliminar noticia:", err)
+            res.status(500).json({
+                message: "ErrorServidor",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+    })
 
 export { api as NoticiasRoute }

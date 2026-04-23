@@ -36,7 +36,7 @@ app.use(
 // =====================
 // Servir archivos staticos
 // =====================
-app.use("/static", express.static(Home(env.STATIC, true)));
+app.use("api/static", express.static(Home(env.STATIC, true)));
 
 // =====================
 // START SERVER

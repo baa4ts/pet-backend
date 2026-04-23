@@ -1,6 +1,6 @@
 import { prisma } from "@/configuracion/Prisma"
 import { secureQuery } from "@/helpers/secureQuery"
-import { requiereAuth } from "@/middleware/Session"
+import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import type { Request, Response } from "express"
 import { Router } from "express"
 import { CrearAusenciaSchema } from "./Ausencias.scheme"
@@ -73,68 +73,80 @@ api.get("/", async (req: Request, res: Response) => {
 // =====================
 // POST - Crear una ausencia
 // =====================
-api.post("/", requiereAuth, async (req: Request, res: Response) => {
-    const result = CrearAusenciaSchema.safeParse(req.body)
+api.post("/",
+    /**
+     * Chain of Responsibility
+     */
 
-    if (!result.success) {
-        res.status(400).json({
-            message: "DatosInvalidos",
-            data: [],
-            meta: {},
-        })
-        return;
-    }
+    // Session y permiso
+    requiereAuth,
+    requierePermiso(["ausencia"]),
 
-    try {
-        /**
-         * Consulta para verificar que el docente existe
-         */
-        const docente = await prisma.user.findUnique({
-            where: { id: result.data.docenteId },
-            select: { id: true, name: true, email: true },
-        })
+    /**
+     * Handle
+     */
+    async (req: Request, res: Response) => {
+        const result = CrearAusenciaSchema.safeParse(req.body)
 
-        if (!docente) {
-            res.status(404).json({
-                message: "NoEncontrado",
+        if (!result.success) {
+            res.status(400).json({
+                message: "DatosInvalidos",
                 data: [],
                 meta: {},
             })
             return;
         }
 
-        /**
-         * Consulta para crear una ausencia
-         */
-        const ausencia = await prisma.ausencia.create({
-            data: {
-                materia: result.data.materia,
-                fecha: new Date(result.data.fecha),
-                docenteId: docente.id,
-                publicadorId: req.user!.id,
-            },
-            include: {
-                docente: { select: { id: true, name: true, email: true } },
-                publicador: { select: { id: true, name: true, email: true } },
-            },
-        })
+        try {
+            /**
+             * Consulta para verificar que el docente existe
+             */
+            const docente = await prisma.user.findUnique({
+                where: { id: result.data.docenteId },
+                select: { id: true, name: true, email: true },
+            })
 
-        res.status(201).json({
-            message: "ok",
-            data: [ausencia],
-            meta: {},
-        })
-        return;
-    } catch (err) {
-        console.error("Error al crear ausencia:", err)
-        res.status(500).json({
-            message: "ErrorServidor",
-            data: [],
-            meta: {},
-        })
-        return;
-    }
-})
+            if (!docente) {
+                res.status(404).json({
+                    message: "NoEncontrado",
+                    data: [],
+                    meta: {},
+                })
+                return;
+            }
+
+            /**
+             * Consulta para crear una ausencia
+             */
+            const ausencia = await prisma.ausencia.create({
+                data: {
+                    materia: result.data.materia,
+                    fecha: new Date(result.data.fecha),
+                    docenteId: docente.id,
+                    publicadorId: req.user!.id,
+                },
+                include: {
+                    docente: { select: { id: true, name: true, email: true } },
+                    publicador: { select: { id: true, name: true, email: true } },
+                },
+            })
+
+            res.status(201).json({
+                message: "ok",
+                data: [ausencia],
+                meta: {},
+            })
+            return;
+        } catch (err) {
+            console.error("Error al crear ausencia:", err)
+            res.status(500).json({
+                message: "ErrorServidor",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+    })
 
 // =====================
 // GET - Obtener una ausencia mediante ID
@@ -192,57 +204,70 @@ api.get("/:id", async (req: Request, res: Response) => {
 // =====================
 // DELETE - Eliminar una ausencia
 // =====================
-api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
-    const idAusencia = Number(req.params.id)
+api.delete("/:id",
 
-    if (isNaN(idAusencia)) {
-        res.status(400).json({
-            message: "DatosInvalidos",
-            data: [],
-            meta: {},
-        })
-        return;
-    }
+    /**
+     * Chain of Responsibility
+     */
 
-    try {
-        /**
-         * Consulta para buscar una unica ausencia
-         */
-        const ausencia = await prisma.ausencia.findUnique({
-            where: { id: idAusencia },
-        })
+    // Session y permiso
+    requiereAuth,
+    requierePermiso(["ausencia"]),
 
-        if (!ausencia) {
-            res.status(404).json({
-                message: "NoEncontrado",
+    /**
+     * Handle
+     */
+    async (req: Request, res: Response) => {
+        const idAusencia = Number(req.params.id)
+
+        if (isNaN(idAusencia)) {
+            res.status(400).json({
+                message: "DatosInvalidos",
                 data: [],
                 meta: {},
             })
             return;
         }
 
-        /**
-         * Consulta para borrar la ausencia
-         */
-        await prisma.ausencia.delete({
-            where: { id: idAusencia },
-        })
+        try {
+            /**
+             * Consulta para buscar una unica ausencia
+             */
+            const ausencia = await prisma.ausencia.findUnique({
+                where: { id: idAusencia },
+            })
 
-        res.json({
-            message: "ok",
-            data: [],
-            meta: {},
-        })
-        return;
-    } catch (err) {
-        console.error("Error al eliminar ausencia:", err)
-        res.status(500).json({
-            message: "ErrorServidor",
-            data: [],
-            meta: {},
-        })
-        return;
-    }
-})
+            if (!ausencia) {
+                res.status(404).json({
+                    message: "NoEncontrado",
+                    data: [],
+                    meta: {},
+                })
+                return;
+            }
+
+            /**
+             * Consulta para borrar la ausencia
+             */
+            await prisma.ausencia.delete({
+                where: { id: idAusencia },
+            })
+
+            res.json({
+                message: "ok",
+                data: [],
+                meta: {},
+            })
+            return;
+        } catch (err) {
+            console.error("Error al eliminar ausencia:", err)
+            res.status(500).json({
+                message: "ErrorServidor",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+    })
 
 export { api as AusenciasRoute }

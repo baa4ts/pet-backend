@@ -1,6 +1,6 @@
 import { prisma } from "@/configuracion/Prisma"
 import { secureQuery } from "@/helpers/secureQuery"
-import { requiereAuth } from "@/middleware/Session"
+import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import { Router } from "express"
 import type { Request, Response } from "express"
 import { CrearEventoSchema } from "./Eventos.scheme"
@@ -69,8 +69,18 @@ api.get("/", async (req: Request, res: Response) => {
 // POST - Crear un evento
 // =====================
 api.post('/',
-    requiereAuth,
 
+    /**
+    * Chain of Responsibility
+    */
+
+    // Session y permiso
+    requiereAuth,
+    requierePermiso(["eventos"]),
+
+    /**
+     * Handle
+     */
     async (req: Request, res: Response) => {
         const result = CrearEventoSchema.safeParse(req.body)
 
@@ -170,57 +180,71 @@ api.get("/:id", async (req: Request, res: Response) => {
 // =====================
 // DELETE - Eliminar un evento
 // =====================
-api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
-    const idEvento = Number(req.params.id)
+api.delete("/:id",
 
-    if (isNaN(idEvento)) {
-        res.status(400).json({
-            message: "DatosInvalidos",
-            data: [],
-            meta: {},
-        })
-        return;
-    }
+    /**
+     * Chain of Responsibility
+     */
 
-    try {
-        /**
-         * Consulta para buscar un unico evento
-         */
-        const evento = await prisma.evento.findUnique({
-            where: { id: idEvento }
-        })
+    // Session y permiso
+    requiereAuth,
+    requierePermiso(["eventos"]),
 
-        if (!evento) {
-            res.status(404).json({
-                message: "NoEncontrado",
+
+    /**
+     * Handle
+     */
+    async (req: Request, res: Response) => {
+        const idEvento = Number(req.params.id)
+
+        if (isNaN(idEvento)) {
+            res.status(400).json({
+                message: "DatosInvalidos",
                 data: [],
                 meta: {},
             })
             return;
         }
 
-        /**
-         * Consulta para borrar
-         */
-        await prisma.evento.delete({
-            where: { id: idEvento },
-        })
+        try {
+            /**
+             * Consulta para buscar un unico evento
+             */
+            const evento = await prisma.evento.findUnique({
+                where: { id: idEvento }
+            })
 
-        res.json({
-            message: "ok",
-            data: [],
-            meta: {},
-        })
-        return;
-    } catch (err) {
-        console.error("Error al eliminar evento:", err)
-        res.status(500).json({
-            message: "ErrorServidor",
-            data: [],
-            meta: {},
-        })
-        return;
-    }
-})
+            if (!evento) {
+                res.status(404).json({
+                    message: "NoEncontrado",
+                    data: [],
+                    meta: {},
+                })
+                return;
+            }
+
+            /**
+             * Consulta para borrar
+             */
+            await prisma.evento.delete({
+                where: { id: idEvento },
+            })
+
+            res.json({
+                message: "ok",
+                data: [],
+                meta: {},
+            })
+            return;
+        } catch (err) {
+            console.error("Error al eliminar evento:", err)
+            res.status(500).json({
+                message: "ErrorServidor",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+    })
 
 export { api as EventosRoute }
