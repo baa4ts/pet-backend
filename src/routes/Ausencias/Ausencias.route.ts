@@ -80,7 +80,7 @@ api.post("/",
 
     // Session y permiso
     requiereAuth,
-    requierePermiso(["ausencia"]),
+    requierePermiso(["ausencias"]),
 
     /**
      * Handle
@@ -212,7 +212,7 @@ api.delete("/:id",
 
     // Session y permiso
     requiereAuth,
-    requierePermiso(["ausencia"]),
+    requierePermiso(["ausencias"]),
 
     /**
      * Handle

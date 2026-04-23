@@ -12,6 +12,11 @@ async function seed() {
         }
     })
 
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { permisos: "ausencia,eventos,noticias" }
+    })
+
     // Noticias
     await prisma.noticia.createMany({
         data: [
@@ -48,12 +53,12 @@ async function seed() {
     await prisma.ausencia.createMany({
         data: [
             // Ausencias futuras
-            { materia: "Matematica",  fecha: new Date("2026-04-24T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
-            { materia: "Historia",    fecha: new Date("2026-04-25T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
-            { materia: "Fisica",      fecha: new Date("2026-05-02T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            { materia: "Matematica", fecha: new Date("2026-04-24T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            { materia: "Historia", fecha: new Date("2026-04-25T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            { materia: "Fisica", fecha: new Date("2026-05-02T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
             // Ausencias pasadas
-            { materia: "Lengua",      fecha: new Date("2026-04-10T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
-            { materia: "Quimica",     fecha: new Date("2026-04-15T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            { materia: "Lengua", fecha: new Date("2026-04-10T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            { materia: "Quimica", fecha: new Date("2026-04-15T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
         ]
     })
 
