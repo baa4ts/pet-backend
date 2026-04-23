@@ -30,6 +30,33 @@ async function seed() {
         ]
     })
 
+    // Eventos
+    await prisma.evento.createMany({
+        data: [
+            // Eventos futuros
+            { nombre: "Acto de fin de mes", descripcion: "Acto escolar en conmemoracion del mes.", fechaInicio: new Date("2026-04-30T10:00:00Z"), userId: user.id },
+            { nombre: "Feria de ciencias", descripcion: "Exposicion de proyectos de los alumnos.", fechaInicio: new Date("2026-05-10T09:00:00Z"), fechaFin: new Date("2026-05-10T17:00:00Z"), userId: user.id },
+            { nombre: "Reunion de padres", descripcion: "Reunion informativa sobre el progreso del trimestre.", fechaInicio: new Date("2026-05-20T18:00:00Z"), userId: user.id },
+            { nombre: "Torneo intercolegial", descripcion: "Torneo de futbol entre colegios de la zona.", fechaInicio: new Date("2026-06-05T08:00:00Z"), fechaFin: new Date("2026-06-05T16:00:00Z"), userId: user.id },
+            // Eventos pasados
+            { nombre: "Inicio del ciclo lectivo", descripcion: "Primer dia de clases del año.", fechaInicio: new Date("2026-03-02T07:30:00Z"), userId: user.id },
+            { nombre: "Acto 24 de marzo", descripcion: "Acto en conmemoracion del Dia de la Memoria.", fechaInicio: new Date("2026-03-24T10:00:00Z"), userId: user.id },
+        ]
+    })
+
+    // Ausencias
+    await prisma.ausencia.createMany({
+        data: [
+            // Ausencias futuras
+            { materia: "Matematica",  fecha: new Date("2026-04-24T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            { materia: "Historia",    fecha: new Date("2026-04-25T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            { materia: "Fisica",      fecha: new Date("2026-05-02T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            // Ausencias pasadas
+            { materia: "Lengua",      fecha: new Date("2026-04-10T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+            { materia: "Quimica",     fecha: new Date("2026-04-15T00:00:00Z"), docenteId: user.id, publicadorId: user.id },
+        ]
+    })
+
     console.log("Seed completado")
 }
 
