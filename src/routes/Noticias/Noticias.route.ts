@@ -9,7 +9,7 @@ import { secureQuery } from "@/helpers/secureQuery"
 const api: Router = Router()
 
 // =====================
-// GET NOTICIAS
+// GET - Obtener todas las noticias
 // =====================
 api.get("/", async (req: Request, res: Response) => {
     const { limit, offset, order, full } = secureQuery(req)
@@ -64,10 +64,52 @@ api.get("/", async (req: Request, res: Response) => {
 })
 
 // =====================
-// POST NOTICIA
+// GET - Obtener una noticia mediante ID
 // =====================
-api.post(
-    "/",
+api.get("/:id", async (req: Request, res: Response) => {
+    const idNoticia = Number(req.params.id)
+
+    if (isNaN(idNoticia)) {
+        return res.status(400).json({
+            message: "DatosInvalidos",
+            data: null,
+            meta: {},
+        })
+    }
+
+    try {
+        const noticia = await prisma.noticia.findUnique({
+            where: { id: idNoticia },
+            include: { recursos: true },
+        })
+
+        if (!noticia) {
+            return res.status(404).json({
+                message: "NoEncontrado",
+                data: null,
+                meta: {},
+            })
+        }
+
+        return res.json({
+            message: "ok",
+            data: noticia,
+            meta: {},
+        })
+    } catch (err) {
+        console.error("Error al obtener noticia:", err)
+        return res.status(500).json({
+            message: "ErrorServidor",
+            data: null,
+            meta: {},
+        })
+    }
+})
+
+// =====================
+// POST - Crear una noticia
+// =====================
+api.post("/",
     requiereAuth,
     Archivos({
         formatos: [".jpg", ".jpeg", ".png", ".webp", ".pdf"],
@@ -75,9 +117,6 @@ api.post(
         maxSizeFile: 10 * 1024 * 1024,
     }).array("recursos", 5),
 
-    /**
-     * Controlador para crear noticia
-     */
     async (req: Request, res: Response) => {
         const result = CrearNoticiaSchema.safeParse(req.body)
 
@@ -124,5 +163,59 @@ api.post(
         }
     }
 )
+
+// =====================
+// DELETE - Eliminar una noticia
+// =====================
+api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
+    const idNoticia = Number(req.params.id)
+
+    if (isNaN(idNoticia)) {
+        return res.status(400).json({
+            message: "DatosInvalidos",
+            data: null,
+            meta: {},
+        })
+    }
+
+    try {
+        const noticia = await prisma.noticia.findUnique({
+            where: { id: idNoticia }
+        })
+
+        if (!noticia) {
+            return res.status(404).json({
+                message: "NoEncontrado",
+                data: null,
+                meta: {},
+            })
+        }
+
+        if (noticia.userId !== req.user!.id) {
+            return res.status(403).json({
+                message: "NoAutorizado",
+                data: null,
+                meta: {},
+            })
+        }
+
+        await prisma.noticia.delete({
+            where: { id: idNoticia },
+        })
+
+        return res.json({
+            message: "ok",
+            data: null,
+            meta: {},
+        })
+    } catch (err) {
+        console.error("Error al eliminar noticia:", err)
+        return res.status(500).json({
+            message: "ErrorServidor",
+            data: null,
+            meta: {},
+        })
+    }
+})
 
 export { api as NoticiasRoute }
