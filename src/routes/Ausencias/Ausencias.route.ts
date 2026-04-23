@@ -84,13 +84,29 @@ api.post("/", requiereAuth, async (req: Request, res: Response) => {
 
     try {
         /**
+         * Consulta para verificar que el docente existe
+         */
+        const docente = await prisma.user.findUnique({
+            where: { id: result.data.docenteId },
+            select: { id: true, name: true, email: true },
+        })
+
+        if (!docente) {
+            return res.status(404).json({
+                message: "NoEncontrado",
+                data: null,
+                meta: {},
+            })
+        }
+
+        /**
          * Consulta para crear una ausencia
          */
         const ausencia = await prisma.ausencia.create({
             data: {
                 materia: result.data.materia,
                 fecha: new Date(result.data.fecha),
-                docenteId: result.data.docenteId,
+                docenteId: docente.id,
                 publicadorId: req.user!.id,
             },
             include: {
