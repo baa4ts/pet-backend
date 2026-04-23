@@ -115,8 +115,9 @@ model Noticia {
 }
 
 model Ausencia {
-  id        Int      @id @default(autoincrement())
-  materia   String
+  id      Int      @id @default(autoincrement())
+  materia String
+  fecha   DateTime
   createdAt DateTime @default(now())
 
   docenteId String

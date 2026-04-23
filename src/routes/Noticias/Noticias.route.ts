@@ -34,6 +34,9 @@ api.get("/", async (req: Request, res: Response) => {
                 orderBy: {
                     createdAt: order ?? "desc",
                 },
+
+                // Incluir los recursos
+                include: { recursos: true }
             }),
 
             /**
@@ -78,6 +81,9 @@ api.get("/:id", async (req: Request, res: Response) => {
     }
 
     try {
+        /**
+         * Consulta para buscar una noticia
+         */
         const noticia = await prisma.noticia.findUnique({
             where: { id: idNoticia },
             include: { recursos: true },
@@ -131,6 +137,9 @@ api.post("/",
         const archivos = (req.files as Express.Multer.File[]) ?? []
 
         try {
+            /**
+             * Consulta para crear una noticia
+             */
             const noticia = await prisma.noticia.create({
                 data: {
                     titulo: result.data.titulo,
@@ -179,6 +188,9 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
     }
 
     try {
+        /**
+         * Consulta para buscar una unica noticia
+         */
         const noticia = await prisma.noticia.findUnique({
             where: { id: idNoticia }
         })
@@ -191,9 +203,13 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
             })
         }
 
-        await prisma.noticia.delete({
-            where: { id: idNoticia },
-        })
+        /**
+         * Consulta para borrar una noticia
+         */
+        await prisma.$transaction([
+            prisma.recurso.deleteMany({ where: { noticiaId: idNoticia } }),
+            prisma.noticia.delete({ where: { id: idNoticia } }),
+        ])
 
         return res.json({
             message: "ok",
