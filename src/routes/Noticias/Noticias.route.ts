@@ -47,7 +47,7 @@ api.get("/", async (req: Request, res: Response) => {
             }),
         ])
 
-        return res.json({
+        res.json({
             message: "ok",
             data: noticias,
             meta: {
@@ -56,13 +56,15 @@ api.get("/", async (req: Request, res: Response) => {
                 offset: offset ?? null,
             },
         })
+        return;
     } catch (err) {
         console.error("Error al obtener noticias:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 
@@ -73,11 +75,12 @@ api.get("/:id", async (req: Request, res: Response) => {
     const idNoticia = Number(req.params.id)
 
     if (isNaN(idNoticia)) {
-        return res.status(400).json({
+        res.status(400).json({
             message: "DatosInvalidos",
             data: [],
             meta: {},
         })
+        return;
     }
 
     try {
@@ -90,25 +93,28 @@ api.get("/:id", async (req: Request, res: Response) => {
         })
 
         if (!noticia) {
-            return res.status(404).json({
+            res.status(404).json({
                 message: "NoEncontrado",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
-        return res.json({
+        res.json({
             message: "ok",
             data: [noticia],
             meta: {},
         })
+        return;
     } catch (err) {
         console.error("Error al obtener noticia:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 
@@ -127,11 +133,12 @@ api.post("/",
         const result = CrearNoticiaSchema.safeParse(req.body)
 
         if (!result.success) {
-            return res.status(400).json({
+            res.status(400).json({
                 message: "DatosInvalidos",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
         const archivos = (req.files as Express.Multer.File[]) ?? []
@@ -157,18 +164,20 @@ api.post("/",
                 include: { recursos: true },
             })
 
-            return res.status(201).json({
+            res.status(201).json({
                 message: "ok",
                 data: [noticia],
                 meta: {},
             })
+            return;
         } catch (err) {
-            console.error("Error al crear noticia:", err)
-            return res.status(500).json({
+            console.error("Error al crear noticia:", err);
+            res.status(500).json({
                 message: "ErrorServidor",
                 data: [],
                 meta: {},
             })
+            return;
         }
     }
 )
@@ -180,11 +189,12 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
     const idNoticia = Number(req.params.id)
 
     if (isNaN(idNoticia)) {
-        return res.status(400).json({
+        res.status(400).json({
             message: "DatosInvalidos",
             data: [],
             meta: {},
         })
+        return;
     }
 
     try {
@@ -196,11 +206,12 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
         })
 
         if (!noticia) {
-            return res.status(404).json({
+            res.status(404).json({
                 message: "NoEncontrado",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
         /**
@@ -211,18 +222,20 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
             prisma.noticia.delete({ where: { id: idNoticia } }),
         ])
 
-        return res.json({
+        res.json({
             message: "ok",
             data: [],
             meta: {},
         })
+        return;
     } catch (err) {
         console.error("Error al eliminar noticia:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 

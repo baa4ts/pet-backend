@@ -49,7 +49,7 @@ api.get("/", async (req: Request, res: Response) => {
             }),
         ])
 
-        return res.json({
+        res.json({
             message: "ok",
             data: ausencias,
             meta: {
@@ -58,13 +58,15 @@ api.get("/", async (req: Request, res: Response) => {
                 offset: offset ?? null,
             },
         })
+        return;
     } catch (err) {
         console.error("Error al obtener ausencias:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 
@@ -75,11 +77,12 @@ api.post("/", requiereAuth, async (req: Request, res: Response) => {
     const result = CrearAusenciaSchema.safeParse(req.body)
 
     if (!result.success) {
-        return res.status(400).json({
+        res.status(400).json({
             message: "DatosInvalidos",
             data: [],
             meta: {},
         })
+        return;
     }
 
     try {
@@ -92,11 +95,12 @@ api.post("/", requiereAuth, async (req: Request, res: Response) => {
         })
 
         if (!docente) {
-            return res.status(404).json({
+            res.status(404).json({
                 message: "NoEncontrado",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
         /**
@@ -115,18 +119,20 @@ api.post("/", requiereAuth, async (req: Request, res: Response) => {
             },
         })
 
-        return res.status(201).json({
+        res.status(201).json({
             message: "ok",
             data: [ausencia],
             meta: {},
         })
+        return;
     } catch (err) {
         console.error("Error al crear ausencia:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 
@@ -137,11 +143,12 @@ api.get("/:id", async (req: Request, res: Response) => {
     const idAusencia = Number(req.params.id)
 
     if (isNaN(idAusencia)) {
-        return res.status(400).json({
+        res.status(400).json({
             message: "DatosInvalidos",
             data: [],
             meta: {},
         })
+        return;
     }
 
     try {
@@ -157,25 +164,28 @@ api.get("/:id", async (req: Request, res: Response) => {
         })
 
         if (!ausencia) {
-            return res.status(404).json({
+            res.status(404).json({
                 message: "NoEncontrado",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
-        return res.json({
+        res.json({
             message: "ok",
             data: [ausencia],
             meta: {},
         })
+        return;
     } catch (err) {
         console.error("Error al obtener ausencia:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 
@@ -186,11 +196,12 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
     const idAusencia = Number(req.params.id)
 
     if (isNaN(idAusencia)) {
-        return res.status(400).json({
+        res.status(400).json({
             message: "DatosInvalidos",
             data: [],
             meta: {},
         })
+        return;
     }
 
     try {
@@ -202,11 +213,12 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
         })
 
         if (!ausencia) {
-            return res.status(404).json({
+            res.status(404).json({
                 message: "NoEncontrado",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
         /**
@@ -216,18 +228,20 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
             where: { id: idAusencia },
         })
 
-        return res.json({
+        res.json({
             message: "ok",
             data: [],
             meta: {},
         })
+        return;
     } catch (err) {
         console.error("Error al eliminar ausencia:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 

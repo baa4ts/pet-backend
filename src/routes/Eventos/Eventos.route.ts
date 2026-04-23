@@ -44,7 +44,7 @@ api.get("/", async (req: Request, res: Response) => {
             }),
         ])
 
-        return res.json({
+        res.json({
             message: "ok",
             data: eventos,
             meta: {
@@ -53,13 +53,15 @@ api.get("/", async (req: Request, res: Response) => {
                 offset: offset ?? null,
             },
         })
+        return;
     } catch (err) {
         console.error("Error al obtener eventos:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 
@@ -73,11 +75,12 @@ api.post('/',
         const result = CrearEventoSchema.safeParse(req.body)
 
         if (!result.success) {
-            return res.status(400).json({
+            res.status(400).json({
                 message: "DatosInvalidos",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
         try {
@@ -95,18 +98,20 @@ api.post('/',
                 include: { user: { select: { id: true, name: true, email: true } } },
             })
 
-            return res.status(201).json({
+            res.status(201).json({
                 message: "ok",
                 data: [evento],
                 meta: {},
             })
+            return;
         } catch (err) {
             console.error("Error al crear evento:", err)
-            return res.status(500).json({
+            res.status(500).json({
                 message: "ErrorServidor",
                 data: [],
                 meta: {},
             })
+            return;
         }
     }
 )
@@ -118,11 +123,12 @@ api.get("/:id", async (req: Request, res: Response) => {
     const idEvento = Number(req.params.id)
 
     if (isNaN(idEvento)) {
-        return res.status(400).json({
+        res.status(400).json({
             message: "DatosInvalidos",
             data: [],
             meta: {},
         })
+        return;
     }
 
     try {
@@ -136,25 +142,28 @@ api.get("/:id", async (req: Request, res: Response) => {
         })
 
         if (!evento) {
-            return res.status(404).json({
+            res.status(404).json({
                 message: "NoEncontrado",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
-        return res.json({
+        res.json({
             message: "ok",
             data: [evento],
             meta: {},
         })
+        return;
     } catch (err) {
         console.error("Error al obtener evento:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 
@@ -165,11 +174,12 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
     const idEvento = Number(req.params.id)
 
     if (isNaN(idEvento)) {
-        return res.status(400).json({
+        res.status(400).json({
             message: "DatosInvalidos",
             data: [],
             meta: {},
         })
+        return;
     }
 
     try {
@@ -181,11 +191,12 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
         })
 
         if (!evento) {
-            return res.status(404).json({
+            res.status(404).json({
                 message: "NoEncontrado",
                 data: [],
                 meta: {},
             })
+            return;
         }
 
         /**
@@ -195,18 +206,20 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
             where: { id: idEvento },
         })
 
-        return res.json({
+        res.json({
             message: "ok",
             data: [],
             meta: {},
         })
+        return;
     } catch (err) {
         console.error("Error al eliminar evento:", err)
-        return res.status(500).json({
+        res.status(500).json({
             message: "ErrorServidor",
             data: [],
             meta: {},
         })
+        return;
     }
 })
 
