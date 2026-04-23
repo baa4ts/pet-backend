@@ -93,7 +93,7 @@ api.get("/:id", async (req: Request, res: Response) => {
 
         return res.json({
             message: "ok",
-            data: noticia,
+            data: [noticia],
             meta: {},
         })
     } catch (err) {
@@ -150,7 +150,7 @@ api.post("/",
 
             return res.status(201).json({
                 message: "ok",
-                data: noticia,
+                data: [noticia],
                 meta: {},
             })
         } catch (err) {
@@ -191,21 +191,13 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
             })
         }
 
-        if (noticia.userId !== req.user!.id) {
-            return res.status(403).json({
-                message: "NoAutorizado",
-                data: null,
-                meta: {},
-            })
-        }
-
         await prisma.noticia.delete({
             where: { id: idNoticia },
         })
 
         return res.json({
             message: "ok",
-            data: null,
+            data: [],
             meta: {},
         })
     } catch (err) {
