@@ -62,7 +62,7 @@ api.get("/", async (req: Request, res: Response) => {
         console.error("Error al obtener ausencias:", err)
         return res.status(500).json({
             message: "ErrorServidor",
-            data: null,
+            data: [],
             meta: {},
         })
     }
@@ -77,7 +77,7 @@ api.post("/", requiereAuth, async (req: Request, res: Response) => {
     if (!result.success) {
         return res.status(400).json({
             message: "DatosInvalidos",
-            data: null,
+            data: [],
             meta: {},
         })
     }
@@ -94,7 +94,7 @@ api.post("/", requiereAuth, async (req: Request, res: Response) => {
         if (!docente) {
             return res.status(404).json({
                 message: "NoEncontrado",
-                data: null,
+                data: [],
                 meta: {},
             })
         }
@@ -124,7 +124,7 @@ api.post("/", requiereAuth, async (req: Request, res: Response) => {
         console.error("Error al crear ausencia:", err)
         return res.status(500).json({
             message: "ErrorServidor",
-            data: null,
+            data: [],
             meta: {},
         })
     }
@@ -139,7 +139,7 @@ api.get("/:id", async (req: Request, res: Response) => {
     if (isNaN(idAusencia)) {
         return res.status(400).json({
             message: "DatosInvalidos",
-            data: null,
+            data: [],
             meta: {},
         })
     }
@@ -159,7 +159,7 @@ api.get("/:id", async (req: Request, res: Response) => {
         if (!ausencia) {
             return res.status(404).json({
                 message: "NoEncontrado",
-                data: null,
+                data: [],
                 meta: {},
             })
         }
@@ -173,7 +173,7 @@ api.get("/:id", async (req: Request, res: Response) => {
         console.error("Error al obtener ausencia:", err)
         return res.status(500).json({
             message: "ErrorServidor",
-            data: null,
+            data: [],
             meta: {},
         })
     }
@@ -188,7 +188,7 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
     if (isNaN(idAusencia)) {
         return res.status(400).json({
             message: "DatosInvalidos",
-            data: null,
+            data: [],
             meta: {},
         })
     }
@@ -204,7 +204,7 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
         if (!ausencia) {
             return res.status(404).json({
                 message: "NoEncontrado",
-                data: null,
+                data: [],
                 meta: {},
             })
         }
@@ -225,7 +225,7 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
         console.error("Error al eliminar ausencia:", err)
         return res.status(500).json({
             message: "ErrorServidor",
-            data: null,
+            data: [],
             meta: {},
         })
     }
