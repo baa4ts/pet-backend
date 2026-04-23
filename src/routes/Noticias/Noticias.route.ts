@@ -5,6 +5,9 @@ import { prisma } from "@/configuracion/Prisma"
 import { Archivos } from "@/middleware/Archivos"
 import { requiereAuth } from "@/middleware/Session"
 import { secureQuery } from "@/helpers/secureQuery"
+import fs from 'fs/promises'
+import { Home } from "@/helpers/Home"
+import { env } from "@/configuracion/Env"
 
 const api: Router = Router()
 
@@ -217,10 +220,21 @@ api.delete("/:id", requiereAuth, async (req: Request, res: Response) => {
         /**
          * Consulta para borrar una noticia
          */
-        await prisma.$transaction([
+        const [recursos] = await prisma.$transaction([
+            prisma.recurso.findMany({ where: { noticiaId: idNoticia } }),
             prisma.recurso.deleteMany({ where: { noticiaId: idNoticia } }),
             prisma.noticia.delete({ where: { id: idNoticia } }),
         ])
+
+
+        // Borrar archivos
+        if (recursos.length > 0) {
+            await Promise.all(
+                recursos.map(r =>
+                    fs.unlink(Home(env.STATIC, false) + r.url).catch(() => { })
+                )
+            )
+        }
 
         res.json({
             message: "ok",
