@@ -3,6 +3,7 @@ import morgan from "morgan"
 import cors from "cors"
 
 import { env } from "@/configuracion/Env"
+import { Home } from "@/helpers/Home"
 
 /**
  * Instancia principal del servidor Express
@@ -31,6 +32,11 @@ app.use(
         credentials: true,
     })
 )
+
+// =====================
+// Servir archivos staticos
+// =====================
+app.use("/static", express.static(Home(env.STATIC, true)));
 
 // =====================
 // START SERVER

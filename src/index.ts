@@ -9,7 +9,7 @@ import { AusenciasRoute } from "./routes/Ausencias/Ausencias.route"
 import { EventosRoute } from "./routes/Eventos/Eventos.route"
 
 // =====================
-// AUTH
+// Better Auth
 // =====================
 app.all("/api/auth/*splat", toNodeHandler(auth))
 
