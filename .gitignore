@@ -20,3 +20,4 @@ dist
 # pnpm
 pnpm-workspace.yaml
 *.zip
+**/*static/
