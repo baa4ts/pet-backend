@@ -11,7 +11,7 @@ export async function requiereAuth(req: Request, res: Response, next: NextFuncti
     })
 
     if (!session) {
-        return res.status(401).json({ mensaje: "NoAutorizado" })
+        return res.status(401).json({ message: "NoAutorizado", data: [], meta: {} })
     }
 
     req.user = session.user
