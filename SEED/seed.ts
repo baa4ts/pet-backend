@@ -7,8 +7,8 @@ async function seed() {
     const { user } = await auth.api.signUpEmail({
         body: {
             name: "Admin",
-            email: "admin@school.com",
-            password: "admin1234",
+            email: "admin@admin.com",
+            password: "abc123456",
         }
     })
 
