@@ -25,6 +25,18 @@ export function secureString(req: Request, key: string, defaultValue = ""): stri
     return value
 }
 
+export function secureStringOptional(req: Request, key: string): string | undefined {
+    const raw = req.query[key]
+
+    if (typeof raw !== "string") return undefined
+
+    const value = raw.trim()
+
+    if (value === "") return undefined
+
+    return value
+}
+
 export function secureBoolean(req: Request, key: string, defaultValue = false): boolean {
     const raw = req.query[key]
 

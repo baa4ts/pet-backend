@@ -1,5 +1,5 @@
 import { prisma } from "@/configuracion/Prisma"
-import { secureQuery } from "@/helpers/secureQuery"
+import { secureQuery, secureStringOptional } from "@/helpers/secureQuery"
 import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import type { Request, Response } from "express"
 import { Router } from "express"
@@ -26,6 +26,7 @@ api.get("/",
      */
     async (req: Request, res: Response) => {
         const { limit, offset, order } = secureQuery(req)
+        const query = secureStringOptional(req, "query")
 
         try {
             const [usuarios, count] = await prisma.$transaction([
@@ -43,13 +44,34 @@ api.get("/",
                         createdAt: order ?? "desc",
                     },
 
+                    // Agregar la query si viene 
+                    ...(query && {
+                        where: {
+                            OR: [
+                                { name: { contains: query } },
+                                { email: { contains: query } },
+                                { id: { contains: query } },
+                            ]
+                        }
+                    }),
+
                     select: { id: true, name: true, email: true, role: true, permisos: true, createdAt: true },
                 }),
 
                 /**
                  * Consulta para contar los usuarios
                  */
-                prisma.user.count(),
+                prisma.user.count({
+                    ...(query && {
+                        where: {
+                            OR: [
+                                { name: { contains: query } },
+                                { email: { contains: query } },
+                                { id: { contains: query } },
+                            ]
+                        }
+                    }),
+                }),
             ])
 
             res.json({
