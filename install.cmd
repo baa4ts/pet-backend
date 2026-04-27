@@ -9,6 +9,12 @@ call pnpm approve-builds --all
 call pnpm prisma generate
 call pnpm prisma migrate deploy
 
+mkdir static
+copy SEED\1.jpg static\1.jpg
+copy SEED\2.jpg static\2.jpg
+copy SEED\3.jpg static\3.jpg
+copy SEED\4.jpg static\4.jpg
+
 :: Ejecutar el seed
 call pnpm run clear
 call pnpm run seed

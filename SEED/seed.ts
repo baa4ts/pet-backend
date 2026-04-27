@@ -1,3 +1,4 @@
+import { id } from "zod/locales";
 import { auth } from "./../src/configuracion/Auth"
 import { prisma } from "./../src/configuracion/Prisma"
 import "dotenv/config"
@@ -74,8 +75,9 @@ async function seed() {
             { titulo: "Campeonato de ajedrez", descripcion: "Se invita a participar del campeonato de ajedrez interescolar.", userId: user.id, createdAt: new Date("2026-04-12T10:30:00Z") },
             { titulo: "Semana de la ciencia", descripcion: "Durante toda la semana se realizaran actividades cientificas.", userId: user.id, createdAt: new Date("2026-04-17T09:00:00Z") },
             { titulo: "Acto por efemeride nacional", descripcion: "Se realizara un acto en conmemoracion de la fecha patria.", userId: user.id, createdAt: new Date("2026-04-22T11:00:00Z") },
-        ]
-    })
+        ],
+    }
+    )
 
     // Eventos
     await prisma.evento.createMany({
@@ -91,9 +93,31 @@ async function seed() {
         ]
     })
 
+    const noticias = await prisma.noticia.findMany({
+        select: { id: true, userId: true },
+        take: 4,
+    });
+
+    await Promise.all(
+        noticias.map((n, i) =>
+            prisma.noticia.update({
+                where: { id: n.id },
+                data: {
+                    recursos: {
+                        create: {
+                            url: `${i + 1}.jpg`,
+                            userId: n.userId,
+                        }
+                    }
+                }
+            })
+        )
+    );
+
     const users = await prisma.user.findMany({
         where: { id: { not: user.id } },
         select: { id: true },
+
     });
 
     const ids = users.map(u => u.id);
