@@ -95,7 +95,7 @@ async function seed() {
 
     const noticias = await prisma.noticia.findMany({
         select: { id: true, userId: true },
-        take: 4,
+        take: 10,
     });
 
     await Promise.all(
