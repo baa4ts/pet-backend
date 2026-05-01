@@ -3,7 +3,7 @@ import { secureQuery } from "@/helpers/secureQuery"
 import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import type { Request, Response } from "express"
 import { Router } from "express"
-import { CrearAusenciaSchema } from "./Ausencias.scheme"
+import { ActualizarAusenciaSchema, CrearAusenciaSchema } from "./Ausencias.scheme"
 
 const api: Router = Router()
 
@@ -147,6 +147,96 @@ api.post("/",
             return;
         }
     })
+
+// =====================
+// PUT - Actualizar una ausencia
+// =====================
+api.put("/:id",
+    /**
+     * Chain of Responsibility
+     */
+
+    // Session y permiso
+    requiereAuth,
+    requierePermiso(["ausencias"]),
+
+    /**
+     * Handle
+     */
+    async (req: Request, res: Response) => {
+        const idAusencia = Number(req.params.id)
+
+        if (isNaN(idAusencia)) {
+            res.status(400).json({
+                message: "DatosInvalidos",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+
+        const result = ActualizarAusenciaSchema.safeParse(req.body)
+
+        if (!result.success) {
+            res.status(400).json({
+                message: "DatosInvalidos",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+
+        try {
+            /**
+             * Verificar que la ausencia existe
+             */
+            const ausenciaExistente = await prisma.ausencia.findUnique({
+                where: { id: idAusencia },
+            })
+
+            if (!ausenciaExistente) {
+                res.status(404).json({
+                    message: "NoEncontrado",
+                    data: [],
+                    meta: {},
+                })
+                return;
+            }
+
+            /**
+             * Actualizar usando spread + correccion de fecha
+             */
+            const ausenciaActualizada = await prisma.ausencia.update({
+                where: { id: idAusencia },
+                data: {
+                    ...result.data,
+                    fecha: result.data.fecha
+                        ? new Date(result.data.fecha)
+                        : undefined,
+                },
+                include: {
+                    docente: { select: { id: true, name: true, email: true } },
+                    publicador: { select: { id: true, name: true, email: true } },
+                },
+            })
+
+            res.json({
+                message: "ok",
+                data: [ausenciaActualizada],
+                meta: {},
+            })
+            return;
+        } catch (err) {
+            console.error("Error al actualizar ausencia:", err)
+            res.status(500).json({
+                message: "ErrorServidor",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+    }
+)
 
 // =====================
 // GET - Obtener una ausencia mediante ID

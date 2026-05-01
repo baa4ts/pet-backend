@@ -171,6 +171,7 @@ api.post("/",
                         createMany: {
                             data: archivos.map(f => ({
                                 url: f.filename,
+                                tipo: f.mimetype,
                                 userId: req.user!.id,
                             })),
                         },
@@ -243,20 +244,25 @@ api.delete("/:id",
             }
 
             /**
-             * Consulta para borrar una noticia
+             * Obtener los recursos antes de eliminar
              */
-            const [recursos] = await prisma.$transaction([
-                prisma.recurso.findMany({ where: { noticiaId: idNoticia } }),
+            const recursos = await prisma.recurso.findMany({
+                where: { noticiaId: idNoticia }
+            })
+
+            /**
+             * Eliminar recursos y noticia en transaccion
+             */
+            await prisma.$transaction([
                 prisma.recurso.deleteMany({ where: { noticiaId: idNoticia } }),
                 prisma.noticia.delete({ where: { id: idNoticia } }),
             ])
 
-
-            // Borrar archivos
+            // Borrar archivos fisicos del servidor
             if (recursos.length > 0) {
                 await Promise.all(
                     recursos.map(r =>
-                        fs.unlink(Home(env.STATIC, false) + r.url).catch(() => { })
+                        fs.unlink(Home(env.STATIC, false) + "/" + r.url).catch(() => { })
                     )
                 )
             }

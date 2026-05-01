@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import { admin } from "better-auth/plugins"
 import { prisma } from "@/configuracion/Prisma"
 
 export const auth = betterAuth({
@@ -26,19 +25,12 @@ export const auth = betterAuth({
         additionalFields: {
             permisos: {
                 type: "string",
-                required: false,
+                required: true,
                 input: false,
                 defaultValue: "",
             },
         },
     },
-
-    /**
-     * Plugins
-     */
-    plugins: [
-        admin(),
-    ],
 
     /**
      * Seguridad

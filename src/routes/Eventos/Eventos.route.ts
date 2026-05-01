@@ -3,7 +3,7 @@ import { secureQuery } from "@/helpers/secureQuery"
 import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import { Router } from "express"
 import type { Request, Response } from "express"
-import { CrearEventoSchema } from "./Eventos.scheme"
+import { ActualizarEventoSchema, CrearEventoSchema } from "./Eventos.scheme"
 
 const api: Router = Router()
 
@@ -116,6 +116,92 @@ api.post('/',
             return;
         } catch (err) {
             console.error("Error al crear evento:", err)
+            res.status(500).json({
+                message: "ErrorServidor",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+    }
+)
+
+// =====================
+// PUT - Actualizar un evento
+// =====================
+api.put("/:id",
+    /**
+     * Chain of Responsibility
+     */
+
+    // Session y permiso
+    requiereAuth,
+    requierePermiso(["eventos"]),
+
+    /**
+     * Handle
+     */
+    async (req: Request, res: Response) => {
+        const idEvento = Number(req.params.id)
+
+        if (isNaN(idEvento)) {
+            res.status(400).json({
+                message: "DatosInvalidos",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+
+        const result = ActualizarEventoSchema.safeParse(req.body)
+
+        if (!result.success) {
+            res.status(400).json({
+                message: "DatosInvalidos",
+                data: [],
+                meta: {},
+            })
+            return;
+        }
+
+        try {
+            /**
+             * Verificar que el evento existe
+             */
+            const eventoExistente = await prisma.evento.findUnique({
+                where: { id: idEvento },
+            })
+
+            if (!eventoExistente) {
+                res.status(404).json({
+                    message: "NoEncontrado",
+                    data: [],
+                    meta: {},
+                })
+                return;
+            }
+
+            /**
+             * Actualizar usando spread + correccion de fechas
+             */
+            const eventoActualizado = await prisma.evento.update({
+                where: { id: idEvento },
+                data: {
+                    ...result.data,
+                    fechaInicio: result.data.fechaInicio ? new Date(result.data.fechaInicio) : undefined,
+                    fechaFin: result.data.fechaFin ? new Date(result.data.fechaFin) : undefined,
+                },
+                include: { user: { select: { id: true, name: true, email: true } } },
+            })
+
+            res.json({
+                message: "ok",
+                data: [eventoActualizado],
+                meta: {},
+            })
+            return;
+        } catch (err) {
+            console.error("Error al actualizar evento:", err)
             res.status(500).json({
                 message: "ErrorServidor",
                 data: [],

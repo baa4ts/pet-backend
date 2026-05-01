@@ -55,7 +55,7 @@ api.get("/",
                         }
                     }),
 
-                    select: { id: true, name: true, email: true, role: true, permisos: true, createdAt: true },
+                    select: { id: true, name: true, email: true, permisos: true, createdAt: true },
                 }),
 
                 /**
@@ -129,7 +129,7 @@ api.get("/:id",
              */
             const usuario = await prisma.user.findUnique({
                 where: { id: idUsuario },
-                select: { id: true, name: true, email: true, role: true, permisos: true, createdAt: true },
+                select: { id: true, name: true, email: true, permisos: true, createdAt: true },
             })
 
             if (!usuario) {
@@ -220,7 +220,7 @@ api.patch("/:id",
             const actualizado = await prisma.user.update({
                 where: { id: idUsuario },
                 data: { permisos: result.data.permisos },
-                select: { id: true, name: true, email: true, role: true, permisos: true, createdAt: true },
+                select: { id: true, name: true, email: true, permisos: true, createdAt: true },
             })
 
             res.json({
@@ -240,74 +240,6 @@ api.patch("/:id",
         }
     })
 
-// =====================
-// POST - Banear un usuario
-// =====================
-api.post("/:id/ban",
-
-    /**
-     * Chain of Responsibility
-     */
-
-    // Session y permiso
-    requiereAuth,
-    requierePermiso(["usuarios"]),
-
-    /**
-     * Handle
-     */
-    async (req: Request, res: Response) => {
-        const idUsuario = req.params.id
-
-        if (!idUsuario || typeof idUsuario !== "string") {
-            res.status(400).json({
-                message: "DatosInvalidos",
-                data: [],
-                meta: {},
-            })
-            return;
-        }
-
-        try {
-            /**
-             * Consulta para buscar un unico usuario
-             */
-            const usuario = await prisma.user.findUnique({
-                where: { id: idUsuario },
-            })
-
-            if (!usuario) {
-                res.status(404).json({
-                    message: "NoEncontrado",
-                    data: [],
-                    meta: {},
-                })
-                return;
-            }
-
-            /**
-             * Banear usuario via Better Auth
-             */
-            await auth.api.banUser({
-                body: { userId: idUsuario },
-            })
-
-            res.json({
-                message: "ok",
-                data: [],
-                meta: {},
-            })
-            return;
-        } catch (err) {
-            console.error("Error al banear usuario:", err)
-            res.status(500).json({
-                message: "ErrorServidor",
-                data: [],
-                meta: {},
-            })
-            return;
-        }
-    })
 
 // =====================
 // DELETE - Eliminar un usuario
@@ -355,10 +287,10 @@ api.delete("/:id",
             }
 
             /**
-             * Eliminar usuario via Better Auth
+             * Consulta para eliminar el usuario
              */
-            await auth.api.removeUser({
-                body: { userId: idUsuario },
+            await prisma.user.delete({
+                where: { id: idUsuario },
             })
 
             res.json({
