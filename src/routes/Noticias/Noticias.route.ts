@@ -1,6 +1,6 @@
 import { Router } from "express"
 import type { Request, Response } from "express"
-import { CrearNoticiaSchema } from "./Noticias.scheme"
+import { CrearNoticiaSchema, ActualizarNoticiaSchema } from "./Noticias.scheme"
 import { prisma } from "@/configuracion/Prisma"
 import { Archivos } from "@/middleware/Archivos"
 import { requiereAuth, requierePermiso } from "@/middleware/Session"
@@ -120,6 +120,101 @@ api.get("/:id", async (req: Request, res: Response) => {
         return;
     }
 })
+
+
+// =====================
+// PUT - Actualizar una noticia
+// =====================
+api.put("/:id",
+
+    requiereAuth,
+    requierePermiso(["noticias"]),
+
+    Archivos({
+        formatos: [".jpg", ".jpeg", ".png", ".webp"],
+        maxFiles: 5,
+        maxSizeFile: 10 * 1024 * 1024,
+    }).array("recursos", 5),
+
+    async (req: Request, res: Response) => {
+        const idNoticia = Number(req.params.id)
+
+        if (isNaN(idNoticia)) {
+            res.status(400).json({ message: "DatosInvalidos", data: [], meta: {} })
+            return;
+        }
+
+        const result = ActualizarNoticiaSchema.safeParse(req.body)
+
+        if (!result.success) {
+            res.status(400).json({ message: "DatosInvalidos", data: [], meta: {} })
+            return;
+        }
+
+        try {
+            const noticia = await prisma.noticia.findUnique({
+                where: { id: idNoticia },
+                include: { recursos: true },
+            })
+
+            if (!noticia) {
+                res.status(404).json({ message: "NoEncontrado", data: [], meta: {} })
+                return;
+            }
+
+            const archivosNuevos = (req.files as Express.Multer.File[]) ?? []
+
+            // Borrar todos los recursos viejos
+            if (noticia.recursos.length > 0) {
+                await Promise.all(
+                    noticia.recursos.map((r) =>
+                        fs.unlink(Home(env.STATIC, false) + "/" + r.url).catch(() => { })
+                    )
+                )
+            }
+
+            // Borrar todos los recursos viejos de DB y crear los nuevos
+            const noticiaActualizada = await prisma.$transaction(async (tx) => {
+
+                /**
+                 * Eliminar todos los recursos de la noticia
+                 */
+                await tx.recurso.deleteMany({ where: { noticiaId: idNoticia } })
+
+                return tx.noticia.update({
+                    where: { id: idNoticia },
+                    data: {
+                        /**
+                         * Datos de la noticia
+                         */
+                        ...result.data,
+
+                        /**
+                         * Recursos de la noticia
+                         */
+                        recursos: {
+                            createMany: {
+                                data: archivosNuevos.map((f) => ({
+                                    url: f.filename,
+                                    tipo: f.mimetype,
+                                    userId: req.user!.id,
+                                })),
+                            },
+                        },
+                    },
+                    include: { recursos: true },
+                })
+            })
+
+            res.json({ message: "ok", data: [noticiaActualizada], meta: {} })
+            return;
+        } catch (err) {
+            console.error("Error al actualizar noticia:", err)
+            res.status(500).json({ message: "ErrorServidor", data: [], meta: {} })
+            return;
+        }
+    }
+)
 
 // =====================
 // POST - Crear una noticia
