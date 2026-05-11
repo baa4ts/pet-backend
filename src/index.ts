@@ -8,6 +8,7 @@ import { NoticiasRoute } from "./routes/Noticias/Noticias.route"
 import { AusenciasRoute } from "./routes/Ausencias/Ausencias.route"
 import { EventosRoute } from "./routes/Eventos/Eventos.route"
 import { UsuariosRoute } from "./routes/Usuarios/Usuarios.route"
+import { PermisoRoute } from "./routes/Permisos/Permisos.route"
 
 // =====================
 // Better Auth
@@ -21,3 +22,4 @@ app.use("/api/noticias", NoticiasRoute)
 app.use("/api/ausencias", AusenciasRoute)
 app.use("/api/eventos", EventosRoute)
 app.use("/api/usuarios", UsuariosRoute)
+app.use("/api/permisos", PermisoRoute)

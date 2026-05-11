@@ -29,7 +29,7 @@ model User {
   // ===========================================================
 
   @@unique([email])
-  @@map("user")
+  @@map("usuarios")
 }
 
 model Session {
@@ -97,7 +97,7 @@ model Noticia {
   recursos Recurso[]
 
   @@index([userId])
-  @@map("noticia")
+  @@map("noticias")
 }
 
 model Recurso {
@@ -114,7 +114,7 @@ model Recurso {
 
   @@index([userId])
   @@index([noticiaId])
-  @@map("recurso")
+  @@map("recursos")
 }
 
 model Ausencia {
@@ -133,7 +133,7 @@ model Ausencia {
 
   @@index([docenteId])
   @@index([publicadorId])
-  @@map("ausencia")
+  @@map("ausencias")
 }
 
 model Evento {
@@ -149,5 +149,5 @@ model Evento {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@map("evento")
+  @@map("eventos")
 }
