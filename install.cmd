@@ -2,8 +2,8 @@
 echo Instalando backend...
 
 :: Instalar dependencias
-call pnpm install
 call pnpm approve-builds --all
+call pnpm install
 
 :: Migraciones
 call pnpm prisma generate

@@ -47,7 +47,7 @@ async function seed() {
 
     await prisma.user.update({
         where: { id: user.id },
-        data: { permisos: "ausencias,eventos,noticias,usuarios,recursos" }
+        data: { permisos: "ausencias,eventos,noticias,usuarios,recursos,permisos" }
     })
 
     // Noticias
