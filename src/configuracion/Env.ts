@@ -11,7 +11,9 @@ export const env = createEnv({
         DATABASE_URL: z.string().default("file:./dev.db"),
         BETTER_AUTH_SECRET: z.string().min(1),
         BETTER_AUTH_URL: z.string().default("http://localhost:3000"),
-        STATIC: z.string().default("static")
+        STATIC: z.string().default("static"),
+        CSRF_BETTER: z.string().default("false"),
+        CORS: z.string().default("http://localhost:5173"),
     },
     runtimeEnv: process.env,
 })

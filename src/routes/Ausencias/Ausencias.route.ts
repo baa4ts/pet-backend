@@ -4,6 +4,7 @@ import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import type { Request, Response } from "express"
 import { Router } from "express"
 import { ActualizarAusenciaSchema, CrearAusenciaSchema } from "./Ausencias.scheme"
+import { io } from "@/index"
 
 const api: Router = Router()
 
@@ -131,6 +132,10 @@ api.post("/",
                 },
             })
 
+            // ===================//
+            io.emit("ausencias")
+            // ===================//
+
             res.status(201).json({
                 message: "ok",
                 data: [ausencia],
@@ -219,6 +224,10 @@ api.put("/:id",
                     publicador: { select: { id: true, name: true, email: true } },
                 },
             })
+
+            // ===================//
+            io.emit("ausencias")
+            // ===================//
 
             res.json({
                 message: "ok",
@@ -342,6 +351,10 @@ api.delete("/:id",
             await prisma.ausencia.delete({
                 where: { id: idAusencia },
             })
+
+            // ===================//
+            io.emit("ausencias")
+            // ===================//
 
             res.json({
                 message: "ok",

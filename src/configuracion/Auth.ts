@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@/configuracion/Prisma"
+import { env } from "./Env"
 
 export const auth = betterAuth({
 
@@ -10,6 +11,11 @@ export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "sqlite",
     }),
+
+    /**
+     * CORS de better
+     */
+    trustedOrigins: env.CORS.split(","),
 
     /**
      * Email y password
@@ -56,6 +62,6 @@ export const auth = betterAuth({
 
     advanced: {
         // solo para desarrollo
-        disableCSRFCheck: true,
+        disableCSRFCheck: env.CSRF_BETTER === "true",
     },
 })

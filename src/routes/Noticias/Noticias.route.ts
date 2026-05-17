@@ -8,6 +8,7 @@ import { secureQuery } from "@/helpers/secureQuery"
 import fs from 'fs/promises'
 import { Home } from "@/helpers/Home"
 import { env } from "@/configuracion/Env"
+import { io } from "@/index"
 
 const api: Router = Router()
 
@@ -206,6 +207,10 @@ api.put("/:id",
                 })
             })
 
+            // ===================//
+            io.emit("noticias")
+            // ===================//
+            
             res.json({ message: "ok", data: [noticiaActualizada], meta: {} })
             return;
         } catch (err) {
@@ -274,6 +279,10 @@ api.post("/",
                 },
                 include: { recursos: true },
             })
+
+            // ===================//
+            io.emit("noticias")
+            // ===================//
 
             res.status(201).json({
                 message: "ok",
@@ -361,6 +370,10 @@ api.delete("/:id",
                     )
                 )
             }
+
+            // ===================//
+            io.emit("noticias")
+            // ===================//
 
             res.json({
                 message: "ok",

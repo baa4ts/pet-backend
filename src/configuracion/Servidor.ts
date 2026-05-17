@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }))
 // =====================
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: env.CORS.split(","),
         credentials: true,
     })
 )
@@ -37,12 +37,5 @@ app.use(
 // Servir archivos staticos
 // =====================
 app.use("/api/static", express.static(Home(env.STATIC, true)));
-
-// =====================
-// START SERVER
-// =====================
-app.listen(env.PORT, () => {
-    console.log(`Servidor: http://localhost:${env.PORT}`)
-})
 
 export { app }

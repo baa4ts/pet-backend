@@ -4,6 +4,7 @@ import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import { Router } from "express"
 import type { Request, Response } from "express"
 import { ActualizarEventoSchema, CrearEventoSchema } from "./Eventos.scheme"
+import { io } from "@/index"
 
 const api: Router = Router()
 
@@ -108,6 +109,10 @@ api.post('/',
                 include: { user: { select: { id: true, name: true, email: true } } },
             })
 
+            // ===================//
+            io.emit("eventos")
+            // ===================//
+
             res.status(201).json({
                 message: "ok",
                 data: [evento],
@@ -193,6 +198,10 @@ api.put("/:id",
                 },
                 include: { user: { select: { id: true, name: true, email: true } } },
             })
+
+            // ===================//
+            io.emit("eventos")
+            // ===================//
 
             res.json({
                 message: "ok",
@@ -315,6 +324,10 @@ api.delete("/:id",
             await prisma.evento.delete({
                 where: { id: idEvento },
             })
+
+            // ===================//
+            io.emit("eventos")
+            // ===================//
 
             res.json({
                 message: "ok",
