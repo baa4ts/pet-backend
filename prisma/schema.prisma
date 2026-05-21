@@ -99,6 +99,7 @@ model Noticia {
 
   @@index([userId])
   @@map("noticias")
+  @@index([createdAt])
 }
 
 model Recurso {
@@ -128,12 +129,13 @@ model Ausencia {
   docenteId String
   docente   User   @relation("AusenciaDocente", fields: [docenteId], references: [id], onDelete: Cascade)
 
-  // Usuario que publicó la ausencia
+  // Usuario que publico la ausencia
   publicadorId String
   publicador   User   @relation("AusenciaPublicador", fields: [publicadorId], references: [id], onDelete: Cascade)
 
   @@index([docenteId])
   @@index([publicadorId])
+  @@index([fecha])
   @@map("ausencias")
 }
 
@@ -151,4 +153,5 @@ model Evento {
 
   @@index([userId])
   @@map("eventos")
+  @@index([fechaInicio])
 }
