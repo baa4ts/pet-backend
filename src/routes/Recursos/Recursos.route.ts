@@ -12,12 +12,12 @@ import { secureQuery } from "@/helpers/secureQuery"
 const api: Router = Router()
 
 // =====================
-// GET - Obtener recursos sin noticia (últimos 20 por defecto)
+// GET - Obtener recursos
 // =====================
 api.get("/", async (req: Request, res: Response) => {
     const { limit, offset, order } = secureQuery(req)
 
-    const take = limit ?? 20  // default 20 si no viene limit
+    const take = limit ?? 20
 
     try {
         const [recursos, count] = await prisma.$transaction([
