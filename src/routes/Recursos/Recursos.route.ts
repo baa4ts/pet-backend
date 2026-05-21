@@ -7,29 +7,29 @@ import { Home } from "@/helpers/Home"
 import { env } from "@/configuracion/Env"
 import { io } from "@/index"
 import fs from "fs/promises"
+import { secureQuery } from "@/helpers/secureQuery"
 
 const api: Router = Router()
 
 // =====================
-// GET - Obtener los ultimos 20 recursos
+// GET - Obtener recursos sin noticia (últimos 20 por defecto)
 // =====================
 api.get("/", async (req: Request, res: Response) => {
+    const { limit, offset, order } = secureQuery(req)
+
+    const take = limit ?? 20  // default 20 si no viene limit
+
     try {
         const [recursos, count] = await prisma.$transaction([
 
-            /**
-             * Consulta para obtener los recursos
-             */
             prisma.recurso.findMany({
                 where: { noticiaId: null },
-                take: 20,
-                orderBy: { createdAt: "desc" },
+                take,
+                ...(offset !== undefined && { skip: offset }),
+                orderBy: { createdAt: order ?? "desc" },
                 include: { user: { select: { id: true, name: true } } },
             }),
 
-            /**
-             * Consulta para contar los recursos
-             */
             prisma.recurso.count({
                 where: { noticiaId: null },
             }),
@@ -40,8 +40,8 @@ api.get("/", async (req: Request, res: Response) => {
             data: recursos,
             meta: {
                 total: count,
-                limit: 20,
-                offset: null,
+                limit: take,
+                offset: offset ?? null,
             },
         })
         return
