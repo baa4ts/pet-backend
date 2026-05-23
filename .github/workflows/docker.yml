@@ -2,7 +2,7 @@ name: Docker Backend
 
 on:
   push:
-    branches: [beta-3]
+    branches: [main]
 
 jobs:
   build:
