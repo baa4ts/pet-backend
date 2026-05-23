@@ -11,6 +11,7 @@ import { UsuariosRoute } from "./routes/Usuarios/Usuarios.route"
 import { PermisoRoute } from "./routes/Permisos/Permisos.route"
 import { crearSocket } from "./socket/Socket"
 import { env } from "./configuracion/Env"
+import { RecursosRoute } from "./routes/Recursos/Recursos.route"
 
 // =====================
 // Better Auth
@@ -25,6 +26,7 @@ app.use("/api/ausencias", AusenciasRoute)
 app.use("/api/eventos", EventosRoute)
 app.use("/api/usuarios", UsuariosRoute)
 app.use("/api/permisos", PermisoRoute)
+app.use("/api/recursos", RecursosRoute)
 
 // =====================
 // WebSocket + Server

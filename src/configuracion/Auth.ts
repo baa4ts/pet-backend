@@ -9,7 +9,7 @@ export const auth = betterAuth({
      * Base de datos
      */
     database: prismaAdapter(prisma, {
-        provider: "sqlite",
+        provider: "postgresql",
     }),
 
     /**

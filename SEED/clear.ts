@@ -1,5 +1,6 @@
-import "dotenv/config"
 import { prisma } from "./../src/configuracion/Prisma"
+import { auth } from "./../src/configuracion/Auth"
+import "dotenv/config"
 
 async function clear() {
     await prisma.recurso.deleteMany()

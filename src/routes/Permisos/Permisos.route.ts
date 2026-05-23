@@ -19,13 +19,12 @@ api.get("/list",
     async (req: Request, res: Response) => {
         try {
             const tablas = (await prisma.$queryRaw<{ name: string }[]>`
-            SELECT name FROM sqlite_master 
-            WHERE type='table' 
-            AND name NOT IN ('session', 'account', 'verification', 'recursos')
-            AND name NOT LIKE '_prisma%'
-            AND name NOT LIKE 'sqlite%'
-            ORDER BY name;
-        `).map(t => t.name)
+                SELECT tablename AS name FROM pg_tables
+                WHERE schemaname = 'public'
+                AND tablename NOT IN ('session', 'account', 'verification', 'recursos')
+                AND tablename NOT LIKE '_prisma%'
+                ORDER BY tablename;
+            `).map(t => t.name)
 
             res.json({
                 message: "ok",
