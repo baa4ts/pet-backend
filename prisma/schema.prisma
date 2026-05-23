@@ -8,35 +8,29 @@ datasource db {
 }
 
 model User {
-  id            String   @id
-  name          String
-  email         String
-  emailVerified Boolean  @default(false)
-  image         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  permisos      String   @default("")
-
-  sessions Session[]
-  accounts Account[]
-
-  // ==================== Relaciones Nuevas ====================
-  noticias Noticia[]
-  recursos Recurso[]
-  eventos  Evento[]
-
+  id                  String     @id
+  name                String
+  email               String     @unique
+  emailVerified       Boolean    @default(false)
+  image               String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  permisos            String     @default("")
+  accounts            Account[]
   ausenciasDocente    Ausencia[] @relation("AusenciaDocente")
   ausenciasPublicadas Ausencia[] @relation("AusenciaPublicador")
-  // ===========================================================
+  eventos             Evento[]
+  noticias            Noticia[]
+  recursos            Recurso[]
+  sessions            Session[]
 
-  @@unique([email])
   @@map("usuarios")
 }
 
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -44,18 +38,15 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
   @@map("session")
 }
 
 model Account {
-  id         String @id
-  accountId  String
-  providerId String
-  userId     String
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -63,9 +54,9 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")
@@ -83,23 +74,19 @@ model Verification {
   @@map("verification")
 }
 
-// ==================== MODELOS DE NEGOCIO ====================
-
 model Noticia {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   titulo      String
   descripcion String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  recursos Recurso[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recursos    Recurso[]
 
   @@index([userId])
-  @@map("noticias")
   @@index([createdAt])
+  @@map("noticias")
 }
 
 model Recurso {
@@ -107,12 +94,10 @@ model Recurso {
   url       String
   tipo      String?
   createdAt DateTime @default(now())
-
   noticiaId Int?
+  userId    String
   noticia   Noticia? @relation(fields: [noticiaId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([noticiaId])
@@ -120,18 +105,14 @@ model Recurso {
 }
 
 model Ausencia {
-  id        Int      @id @default(autoincrement())
-  materia   String
-  fecha     DateTime
-  createdAt DateTime @default(now())
-
-  // Docente que tiene la ausencia
-  docenteId String
-  docente   User   @relation("AusenciaDocente", fields: [docenteId], references: [id], onDelete: Cascade)
-
-  // Usuario que publico la ausencia
+  id           Int      @id @default(autoincrement())
+  materia      String
+  fecha        DateTime
+  createdAt    DateTime @default(now())
+  docenteId    String
   publicadorId String
-  publicador   User   @relation("AusenciaPublicador", fields: [publicadorId], references: [id], onDelete: Cascade)
+  docente      User     @relation("AusenciaDocente", fields: [docenteId], references: [id], onDelete: Cascade)
+  publicador   User     @relation("AusenciaPublicador", fields: [publicadorId], references: [id], onDelete: Cascade)
 
   @@index([docenteId])
   @@index([publicadorId])
@@ -147,11 +128,10 @@ model Evento {
   fechaFin    DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@map("eventos")
   @@index([fechaInicio])
+  @@map("eventos")
 }
