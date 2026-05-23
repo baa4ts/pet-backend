@@ -13,7 +13,7 @@ export const env = createEnv({
         BETTER_AUTH_URL: z.string().default("http://localhost:3000"),
         STATIC: z.string().default("static"),
         CSRF_BETTER: z.string().default("false"),
-        CORS: z.string().default("http://localhost:5173"),
+        CORS: z.string().default("http://localhost:4000"),
     },
     runtimeEnv: process.env,
 })
