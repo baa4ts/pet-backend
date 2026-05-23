@@ -33,4 +33,4 @@ COPY --from=builder /app/SEED ./SEED
 
 EXPOSE 3000
 
-CMD pnpm prisma migrate deploy && pnpm run clear && pnpm run seed && pnpm start
+CMD pnpm run clear && pnpm run seed && pnpm start
