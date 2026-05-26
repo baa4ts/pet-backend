@@ -54,5 +54,10 @@ export const auth = betterAuth({
     advanced: {
         // solo para desarrollo
         disableCSRFCheck: env.CSRF_BETTER === "true",
+
+        // Fix para el proxy
+        ipAddress: {
+            ipAddressHeaders: ["x-forwarded-for"]
+        }
     },
 })
