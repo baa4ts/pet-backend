@@ -39,15 +39,6 @@ export const auth = betterAuth({
     },
 
     /**
-     * Seguridad
-     */
-    rateLimit: {
-        enabled: true,
-        window: 10,
-        max: 100,
-    },
-
-    /**
      * Sesion
      */
     session: {
