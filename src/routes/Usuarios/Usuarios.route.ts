@@ -1,5 +1,6 @@
 import { prisma } from "@/configuracion/Prisma"
 import { secureQuery, secureStringOptional } from "@/helpers/secureQuery"
+import { io } from "@/index"
 import { requiereAuth, requierePermiso } from "@/middleware/Session"
 import type { Request, Response } from "express"
 import { Router } from "express"
@@ -208,6 +209,10 @@ api.delete("/:id",
                 where: { id: idUsuario },
             })
 
+            // ===================//
+            io.emit("usuarios")
+            // ===================//
+                        
             res.json({
                 message: "ok",
                 data: [],
