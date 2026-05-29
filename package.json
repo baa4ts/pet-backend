@@ -4,6 +4,9 @@
   "description": "",
   "main": "src/index.ts",
   "type": "module",
+  "engines": {
+    "node": ">=24.16.0"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsup src/index.ts SEED/seed.ts SEED/clear.ts --format esm --out-dir dist",

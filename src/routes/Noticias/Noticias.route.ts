@@ -132,9 +132,9 @@ api.put("/:id",
     requierePermiso(["noticias"]),
 
     Archivos({
-        formatos: [".jpg", ".jpeg", ".png", ".webp"],
+        formatos: [".jpg", ".jpeg", ".png", ".webp", ".mp4", ".webm", ".mov"],
         maxFiles: 5,
-        maxSizeFile: 10 * 1024 * 1024,
+        maxSizeFile: 100 * 1024 * 1024
     }).array("recursos", 5),
 
     async (req: Request, res: Response) => {
@@ -210,7 +210,7 @@ api.put("/:id",
             // ===================//
             io.emit("noticias")
             // ===================//
-            
+
             res.json({ message: "ok", data: [noticiaActualizada], meta: {} })
             return;
         } catch (err) {
@@ -236,9 +236,9 @@ api.post("/",
 
     // Archivos
     Archivos({
-        formatos: [".jpg", ".jpeg", ".png", ".webp"],
+        formatos: [".jpg", ".jpeg", ".png", ".webp", ".mp4", ".webm", ".mov"],
         maxFiles: 5,
-        maxSizeFile: 10 * 1024 * 1024,
+        maxSizeFile: 100 * 1024 * 1024,
     }).array("recursos", 5),
 
     /**
