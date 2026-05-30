@@ -20,8 +20,8 @@ if (env.NODE_ENV === "development") {
 // =====================
 // BODY PARSER
 // =====================
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json({ limit: '600mb' }))
+app.use(express.urlencoded({ extended: true, limit: '600mb' }))
 
 // =====================
 // CORS
